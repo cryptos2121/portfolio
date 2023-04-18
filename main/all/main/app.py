@@ -13,7 +13,7 @@ import boto3
 def lambda_handler(event, context):
     print ("event ==>", event)
     # rpc_url = "https://gnosischain-rpc.gateway.pokt.network"
-    rpc_url = "https://polygon-mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
+    # rpc_url = "https://polygon-mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
     # referrerAddress="0xbd0B3cB386314a7d4c314825727Aa4CCE2FA5e1b"
     referrerAddress=""
     final_body = event
@@ -59,6 +59,17 @@ def lambda_handler(event, context):
     print ("message ==>", message)
     chain = event['chain']
     print ("chain ==>", chain)
+    if chain == "polygon":
+        rpc_url = "https://polygon-mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
+    elif chain == "bsc":
+        rpc_url = "https://bsc-dataseed.binance.org/"
+    elif chain == "ethereum":
+        rpc_url = "https://mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
+    elif chain == "arbitrum":
+        rpc_url = "https://arbitrum-mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
+    elif chain == "gnosis":
+        rpc_url = "https://gnosischain-rpc.gateway.pokt.network"
+
     URL = event['portfolio']
     portfolio = "/tmp/portfolio_"+str(random.randint(1,100000))+".csv"
     response = wget.download(URL, portfolio)
