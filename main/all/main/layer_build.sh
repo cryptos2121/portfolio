@@ -1,7 +1,7 @@
 #!/bin/bash
 DOCKER_BUILDKIT=1
 PYTHON_VERSION=$1
-# DELETE=$2
+DELETE=$2
 
 if [ "$DELETE" = "1" ]; then
   echo "Deleting python folder and zip file"
@@ -22,6 +22,7 @@ docker rm temp-container
 
 du -sh /tmp/python
 ls -lh /tmp/python | wc -l
+tree -L 2 /tmp/python
 #zip -r /tmp/python_layer.zip /tmp/python
 cd /tmp
 zip -r -q -9 python_layer.zip python
