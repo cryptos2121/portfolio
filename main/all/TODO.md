@@ -18,6 +18,10 @@
 # TODO: Refacor the code to break into small functions 
 # TODO: Test everything on Mac without using docker 
 
+# git checkout -b refactor/functions3
+# TODO: add more chain
+# TODO: Document how to use it, enable destReceiver, referrerAddress
+# 
 
 # pip install -r main/requirements.txt
 # pip install python-lambda-local
