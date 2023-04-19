@@ -4,6 +4,9 @@ import time, sys, requests
 from web3 import Web3
 from os import system
 import boto3
+from intial_setup import setup_rpc_url, Exiting
+from aws_utils import check_message
+from portfolio_utils import read_portfolio_file
 
 # pip install -r main/requirements.txt
 # pip install python-lambda-local
@@ -11,75 +14,41 @@ import boto3
 # python-lambda-local -f lambda_handler main/app.py secret.json -t 6000
 
 def lambda_handler(event, context):
+    
     print ("event ==>", event)
-    # rpc_url = "https://gnosischain-rpc.gateway.pokt.network"
-    # rpc_url = "https://polygon-mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
-    # referrerAddress="0xbd0B3cB386314a7d4c314825727Aa4CCE2FA5e1b"
-    referrerAddress=""
-    final_body = event
-    # print ("event ==>", event)
-    final_body = json.dumps(json.loads(event['body']),indent=4)
-    # print ("final_body ==>", final_body)
-    print ("===============")
-    body_dict = json.loads(event['body'])
-    event = body_dict
-    print ("body_dict ==>", event)
-    print ("===============")
-
+    print ("event type: ", type(event))
+    if 'body' in event:
+        print (type(event))
+        # event = json.dumps(json.loads(event['body']),indent=4)
+        event = json.loads(event['body'])
+        print (type(event))
+        print ("Body did exist")
+    else:
+        event = event
+        print ("Body did not exist")
+    print ("event ==>", event)
+    print ("event type: ", type(event))
+ 
+    if (event.get('local_execution', False)):
+        print("This is a local execution. 🖥🖥️🖥️️🖥️️")
+    if (event.get('cloud_execution', False)):
+        print("This is an AWS Function URL execution. ⛅⛅⛅⛅")
+    
+    # If the message is not correct, then exit
     message = event['message']
-    # Open secret key from AWS S3 bucket name as "project-ubuntu-gnosis-2023" and file name as "secret.key" using Python boto3
-    bucket_name = 'project-ubuntu-gnosis-2023'
-    file_name = 'secret.key'
-
-    # Set the name of your AWS profile (optional)
-    aws_profile_name = 'default'
-
-    # Create an S3 resource using the specified AWS profile (if provided)
-    # session = boto3.Session(profile_name=aws_profile_name)
-    # s3 = session.resource('s3')
-    s3 = boto3.resource('s3')
-
-    # Get the contents of the file
-    obj = s3.Object(bucket_name, file_name)
-    contents = obj.get()['Body'].read().decode('utf-8')
-    print ("contents ==>", contents)
-    print ("message ==>", message)
-
-    # Compare message with the secret key
-    # if message != contents:
-    if message not in contents:
-        return {
-            "isBase64Encoded": "false",
-            "statusCode": 403,
-            "body": "Access Denied",
-            "headers": {
-                "content-type": "application/json"
-            }
-        }
-    print ("message ==>", message)
     chain = event['chain']
-    print ("chain ==>", chain)
-    if chain == "polygon":
-        rpc_url = "https://polygon-mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
-    elif chain == "bsc":
-        rpc_url = "https://bsc-dataseed.binance.org/"
-    elif chain == "ethereum":
-        rpc_url = "https://mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
-    elif chain == "arbitrum":
-        rpc_url = "https://arbitrum-mainnet.infura.io/v3/d162e1d2d54e4fd5b07a78b9b9176728"
-    elif chain == "gnosis":
-        rpc_url = "https://gnosischain-rpc.gateway.pokt.network"
+    if not check_message(message):
+        Exiting(443)
+    rpc_url = setup_rpc_url(chain)
+    print ("chain ==>", event['chain'])
+    print ("rpc_url ==>", rpc_url)
 
     URL = event['portfolio']
-    portfolio = "/tmp/portfolio_"+str(random.randint(1,100000))+".csv"
-    response = wget.download(URL, portfolio)
-    print ("\n Portfolio File Name ==>", portfolio)
-    system("cat "+portfolio)
-    print ("\n\n")
-    file = open(portfolio)
-    # Open csv file from URL and read it into a list
-    # portfolio  = event['portfolio']
-    # print(portfolio)
+    portfolio, header, rows = read_portfolio_file(URL)
+    print ("portfolio ==>", portfolio)
+    print ("header ==>", header)
+    print ("rows ==>", rows)
+
 
     total_investment_amount = float(event['total_investment_amount'])
     print ("total_investment_amount ==>", total_investment_amount)
@@ -90,15 +59,7 @@ def lambda_handler(event, context):
     destReceiver = event['destReceiver']
     print ("destReceiver ==>", destReceiver)
     file = open(portfolio)
-    # Open csv file from URL and read it into a list
-    # csvreader = csv.reader(file)
-    # header = []
-    # header = next(csvreader)
-    # rows = []
-    # for row in csvreader:
-    #     rows.append(row)
-    # print (header)
-    # print (rows)
+
     exchange = OneInchSwap(public_key, chain=chain) # initialise the OneInchSwap object as "exchange"
     helper = TransactionHelper(rpc_url, public_key, private_key, chain=chain) # initialise the TransactionHelper object as "helper"
     # oracle = OneInchOracle(rpc_url, chain=chain) # initialise the OneInchOracle object as "oracle"
@@ -108,10 +69,13 @@ def lambda_handler(event, context):
     else:
         investment_token = "USDC"
     # investment_token = "DAI"
+
+    
     tokens = exchange.get_tokens()
     print ("Token: ", tokens[investment_token]['symbol'], "Address: ", tokens[investment_token]['address'], "Decimals: ", tokens[investment_token]['decimals'])
     result = helper.get_ERC20_balance(exchange._token_to_address(investment_token), decimal=tokens[investment_token]['decimals'])
     print ("Token: ", tokens[investment_token])
+    print ("result ==>", result)
 
     print ("")
     if result == 0:
@@ -127,11 +91,11 @@ def lambda_handler(event, context):
     
 
     # TODO: Check if the investment token is approved for spending by the smart contract in function
-    # approveal_tx = exchange.get_approve (from_token_symbol=investment_token)
-    # built = helper.build_tx(approveal_tx, 'high') # prepare the transaction for signing, gas price defaults to fast.
-    # signed = helper.sign_tx(built) # sign the transaction using your private key
-    # approval_result = helper.broadcast_tx(signed) #broadcast the transaction to the network and wait for the receipt.
-    # print ("approval_result ==>", approval_result)
+    approveal_tx = exchange.get_approve (from_token_symbol=investment_token)
+    built = helper.build_tx(approveal_tx, 'high') # prepare the transaction for signing, gas price defaults to fast.
+    signed = helper.sign_tx(built) # sign the transaction using your private key
+    approval_result = helper.broadcast_tx(signed) #broadcast the transaction to the network and wait for the receipt.
+    print ("approval_result ==>", approval_result)
     row_count = sum(1 for row in file) - 1
     print("Total coins (Portfolio Size): ",row_count)
     print("Total Investment Ammount: ",total_investment_amount)
@@ -140,7 +104,6 @@ def lambda_handler(event, context):
     print("Investment Ammount per coin calculated as: Total investment amount / Portfolio size")
     file.close()
     print ("investment_amount ==>", investment_amount)
-
 
     file = open(portfolio)
     csvreader = csv.reader(file)
