@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "EVM"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1gznh894m47ux"
+s3_prefix = "EVM"
+region = "ap-southeast-1"
+capabilities = "CAPABILITY_IAM"
+image_repositories = []

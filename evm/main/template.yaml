@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Gnosis Chain Ecosystem (web3 version 6)
+
+  Portfolio for Gnosis Chain Ecosystem
+
+Globals:
+  Function:
+    Timeout: 600
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: main/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      FunctionName: GnosisPortfolio6
+      Layers:
+        - !Ref LambdaLayer
+      FunctionUrlConfig:
+        AuthType: NONE
+
+  LambdaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: my-lambda-layer
+      Description: "My Lambda Layer with dependencies"
+      ContentUri: /tmp/python_layer.zip
+      CompatibleRuntimes:
+        - python3.7
+      RetentionPolicy: Retain
+
+Outputs:
+  HelloWorldFunction:
+    Description: "Portfolio Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionURL:
+    Description: "Lambda Function URL Endpoint"
+    Value: !GetAtt HelloWorldFunctionUrl.FunctionUrl
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
+  LambdaLayerArn:
+    Description: "Lambda Layer ARN"
+    Value: !Ref LambdaLayer
