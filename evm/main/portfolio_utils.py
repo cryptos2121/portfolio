@@ -8,7 +8,7 @@ def read_portfolio_file(url):
     print("\n")
     portfolio = "/tmp/portfolio_" + str(random.randint(1, 100000)) + ".csv"
     response = wget.download(url, portfolio)
-    print("\n Portfolio File Name ==>", portfolio)
+    # print("\n Portfolio File Name ==>", portfolio)
     # system("cat " + portfolio)
     print("\n")
     file = open(portfolio)

@@ -25,5 +25,6 @@ def check_message(message):
         print ("Access Denied   ❌")
         return False
     else:
-        print ("Access Granted   ✅")
+        print("")
+        # print ("Access Granted   ✅")
         return True
