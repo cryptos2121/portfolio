@@ -84,4 +84,5 @@ def Check_Allowance (investment_token, amount, exchange, helper, public_key):
         signed = helper.sign_tx(built) # sign the transaction using your private key
         approval_result = helper.broadcast_tx(signed) #broadcast the transaction to the network and wait for the receipt. 
     else:
-        print ("You have allowance ✅.\n")
+        # print ("You have allowance ✅.\n")
+        print("")

@@ -14,15 +14,14 @@ from portfolio_utils import read_portfolio_file
 # python-lambda-local -f lambda_handler main/app.py secret.json -t 6000
 
 def lambda_handler(event, context):
-    print ("Check_Allowance")
-    print ("=======================================================================================================================================")
+    # print ("=======================================================================================================================================")
     # print ("event ==>", event)
     # print ("event type: ", type(event))
     if 'body' in event:
-        print (type(event))
+        # print (type(event))
         # event = json.dumps(json.loads(event['body']),indent=4)
         event = json.loads(event['body'])
-        print (type(event))
+        # print (type(event))
         # print ("Body did exist")
     else:
         event = event
@@ -52,7 +51,7 @@ def lambda_handler(event, context):
 
 
     total_investment_amount = float(event['total_investment_amount'])
-    print ("total_investment_amount ==>", total_investment_amount)
+    # print ("total_investment_amount ==>", total_investment_amount)
     public_key = event['public_key']
     # print ("public_key ==>", public_key)
     private_key = event['private_key']
@@ -75,18 +74,18 @@ def lambda_handler(event, context):
     tokens = exchange.get_tokens()
     print ("Token: ", tokens[investment_token]['symbol'], "Address: ", tokens[investment_token]['address'], "Decimals: ", tokens[investment_token]['decimals'])
     result = helper.get_ERC20_balance(exchange._token_to_address(investment_token), decimal=tokens[investment_token]['decimals'])
-    print ("Token: ", tokens[investment_token])
-    print ("result ==>", result)
+    # print ("Token: ", tokens[investment_token])
+    print ("Current Balance ==>", result)
 
     print ("")
     if result == 0:
-        print ("You don't have any tokens to swap.")
+        print ("You don't have", investment_token, "token to swap.")
         exit ()
     else:
         print ("\n","Token: ", investment_token, "Balance: ", result, "\n")
     # Compare the balance of the investment token with the total investment amount
     if result < total_investment_amount:
-        print ("You don't have enough tokens to swap.")
+        print ("You don't have enough Balance to swap.")
         print ("\U0001F622 \n\U0001F622")
         exit ()
     
@@ -100,8 +99,8 @@ def lambda_handler(event, context):
     investment_amount = total_investment_amount / row_count
     print("Investment Ammount per coin: ", investment_amount)
     print("Investment Ammount per coin calculated as: Total investment amount / Portfolio size")
+    # print ("investment_amount ==>", investment_amount)
     file.close()
-    print ("investment_amount ==>", investment_amount)
 
     file = open(portfolio)
     csvreader = csv.reader(file)
